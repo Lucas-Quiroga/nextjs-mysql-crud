@@ -4,8 +4,10 @@ import Buttons from "./Buttons";
 
 async function loadProduct(productId) {
   const { data } = await axios.get(
-    "http://localhost:3000/api/products/" + productId
+    "https://nextjs-mysql-crud-mu.vercel.app/api/products/" + productId
   );
+
+  //"http://localhost:3000/api/products/"
   return data;
 }
 

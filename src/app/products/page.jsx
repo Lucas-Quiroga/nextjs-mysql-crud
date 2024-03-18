@@ -3,7 +3,10 @@ import axios from "axios";
 import ProductCard from "@/components/ProductCard";
 
 async function loadProducts() {
-  const { data } = await axios.get("http://localhost:3000/api/products");
+  // http://localhost:3000
+  const { data } = await axios.get(
+    "https://nextjs-mysql-crud-mu.vercel.app/api/products"
+  );
   return data;
 }
 
