@@ -35,7 +35,7 @@ const ProductForm = () => {
         },
       });
     } else {
-      await axios.put("/api/products/" + params.id, product, {
+      await axios.put("/api/products/" + params.id, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

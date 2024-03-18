@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { conn } from "@/libs/mysql";
+import { cloudinary } from "@/libs/cloudinary";
+import { processImage } from "@/libs/processImage";
+import { unlink } from "fs/promises";
 
 export async function GET(request, { params }) {
   try {
@@ -61,9 +64,39 @@ export async function DELETE(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    const data = await request.json();
+    const data = await request.formData();
+    const image = data.get("image");
+    const updateData = {
+      name: data.get("name"),
+      price: data.get("price"),
+      description: data.get("description"),
+    };
+    if (!data.get("name")) {
+      return NextResponse.json(
+        {
+          message: "El nombre es requerido",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (image) {
+      const filePath = await processImage(image);
+
+      // Se sube la imagen a Cloudinary
+      const res = await cloudinary.uploader.upload(filePath);
+
+      updateData.image = res.secure_url;
+      // Si se pudo subir la imagen correctamente a Cloudinary, se elimina del servidor local
+      if (res) {
+        await unlink(filePath);
+      }
+    }
+
     const result = await conn.query("UPDATE product SET ? WHERE id = ?", [
-      data,
+      updateData,
       params.id,
     ]);
 

@@ -1,14 +1,8 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { conn } from "@/libs/mysql";
-import { writeFile, unlink } from "fs/promises";
-import path from "path";
-import { v2 as cloudinary } from "cloudinary";
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import { unlink } from "fs/promises";
+import { cloudinary } from "@/libs/cloudinary";
+import { processImage } from "@/libs/processImage";
 
 export async function GET() {
   try {
@@ -40,14 +34,7 @@ export async function POST(request) {
       );
     }
 
-    // Se convierte la imagen en un buffer
-    const bytes = await image.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Se construye la ruta del archivo donde se guardará la imagen
-    const filePath = path.join(process.cwd(), "public", image.name);
-    // Se escribe el buffer en el archivo especificado
-    await writeFile(filePath, buffer);
+    const filePath = await processImage(image);
 
     // Se sube la imagen a Cloudinary
     const res = await cloudinary.uploader.upload(filePath);
