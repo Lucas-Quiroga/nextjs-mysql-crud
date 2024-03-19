@@ -1,13 +1,10 @@
 import React from "react";
-import axios from "axios";
 import ProductCard from "@/components/ProductCard";
+import { conn } from "@/libs/mysql";
 
 async function loadProducts() {
-  // http://localhost:3000
-  const { data } = await axios.get(
-    "https://nextjs-mysql-crud-mu.vercel.app/api/products"
-  );
-  return data;
+  const products = await conn.query("SELECT * FROM product");
+  return products;
 }
 
 const ProductsPage = async () => {

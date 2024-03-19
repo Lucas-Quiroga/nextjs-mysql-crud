@@ -1,13 +1,11 @@
 import React from "react";
-import axios from "axios";
 import Buttons from "./Buttons";
+import { conn } from "@/libs/mysql";
 
 async function loadProduct(productId) {
-  const { data } = await axios.get(
-    "https://nextjs-mysql-crud-mu.vercel.app/api/products/" + productId
-  );
-
-  //"http://localhost:3000/api/products/"
+  const [data] = await conn.query("SELECT * FROM product WHERE id = ?", [
+    productId,
+  ]);
   return data;
 }
 
