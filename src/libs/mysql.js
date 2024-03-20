@@ -7,5 +7,8 @@ export const conn = mysql({
     password: process.env.MYSQL_PASSWORD,
     port: parseInt(process.env.MYSQL_PORT),
     database: process.env.MYSQL_DATABASE,
+    ssl: {
+      rejectUnauthorized: false,
+    },
   },
 });

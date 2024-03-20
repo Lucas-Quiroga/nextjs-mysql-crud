@@ -7,6 +7,9 @@ async function loadProducts() {
   return products;
 }
 
+// esto es para que se cargue la pagina de manera dinamica
+export const dynamic = "force-dynamic";
+
 const ProductsPage = async () => {
   const products = await loadProducts();
 

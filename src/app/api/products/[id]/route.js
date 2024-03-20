@@ -83,40 +83,63 @@ export async function PUT(request, { params }) {
     }
 
     if (image) {
-      const filePath = await processImage(image);
+      //en modo desarrollo
+      // const filePath = await processImage(image);
 
-      // Se sube la imagen a Cloudinary
-      const res = await cloudinary.uploader.upload(filePath);
+      //en modo producción
+      const buffer = await processImage(image);
+
+      const res = await new Promise((resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream(
+            {
+              resource_type: "image",
+            },
+            async (err, res) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+              resolve(res);
+            }
+          )
+          .end(buffer);
+      });
 
       updateData.image = res.secure_url;
-      // Si se pudo subir la imagen correctamente a Cloudinary, se elimina del servidor local
-      if (res) {
-        await unlink(filePath);
+
+      const result = await conn.query("UPDATE product SET ? WHERE id = ?", [
+        updateData,
+        params.id,
+      ]);
+
+      if (result.affectedRows === 0) {
+        return NextResponse.json(
+          {
+            message: "Producto no encontrado",
+          },
+          {
+            status: 404,
+          }
+        );
       }
-    }
 
-    const result = await conn.query("UPDATE product SET ? WHERE id = ?", [
-      updateData,
-      params.id,
-    ]);
-
-    if (result.affectedRows === 0) {
-      return NextResponse.json(
-        {
-          message: "Producto no encontrado",
-        },
-        {
-          status: 404,
-        }
+      const updateProduct = await conn.query(
+        "SELECT * FROM product WHERE id = ?",
+        [params.id]
       );
+
+      return NextResponse.json(updateProduct[0]);
+
+      // Se sube la imagen a Cloudinary
+      //en modo desarrollo
+      // const res = await cloudinary.uploader.upload(filePath);
+
+      // Si se pudo subir la imagen correctamente a Cloudinary, se elimina del servidor local
+      // if (res && process.env.NODE_ENV !== "production") {
+      //   await unlink(filePath);
+      // }
     }
-
-    const updateProduct = await conn.query(
-      "SELECT * FROM product WHERE id = ?",
-      [params.id]
-    );
-
-    return NextResponse.json(updateProduct[0]);
   } catch (error) {
     return NextResponse.json(
       {
